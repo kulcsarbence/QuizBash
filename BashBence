@@ -1,68 +1,68 @@
 #!/bin/bash
 
-inputOne="kerdesek.txt"
-inputTwo="valaszok.txt"
-inputThree="kerdesekSzama.txt"
+inputOne="prop/questions.txt"
+inputTwo="prop/answers.txt"
+inputThree="prop/answerCount.txt"
 
 echo "Udvozollek a Kviz programomban! Mit szeretnel csinalni?"
 echo "1. Elkezdeni a jatekot"
 echo "2. Kerdesek listajat megnezni"
 echo "3. Kilepes"
-read mit
+read chosenMenu
 
-joValaszok=0
-rosszValaszok=0
+goodAnswers=0
+wrongAnswers=0
 
-mennyiKerdes=$(head -n 1 $inputThree)
-if (( $mennyiKerdes < 0 )); then
+questionCount=$(head -n 1 $inputThree)
+if (( $questionCount<0 )); then
 	sed -i "1d" $inputThree
 	echo "0" >> $inputThree
 fi
 
-while [ $mit != 1 ] && [ $mit != 2 ] && [ $mit != 3 ]
+while [ $chosenMenu != 1 ] && [ $chosenMenu != 2 ] && [ $chosenMenu != 3 ]
 do
 	echo "Rosszul adtad meg a szamot! Ujra!"
-	read mit
+	read chosenMenu
 done
 
-if [ $mit == 1 ]
+if [ $chosenMenu == 1 ]
 then
-	mennyiKerdes=$(head -n 1 $inputThree)
-	if (( $mennyiKerdes > 0 )); then
-		echo "$mennyiKerdes kerdest kell helyesen megvalaszolnod. Sok sikert!"
-		declare -a megvalaszoltKerdesek
-		for (( i=1; i<=$mennyiKerdes; i++ ))
+	questionCount=$(head -n 1 $inputThree)
+	if (( $questionCount > 0 )); then
+		echo "$questionCount kerdest kell helyesen megvalaszolnod. Sok sikert!"
+		declare -a answeredQuestions
+		for (( i=1; i<=$questionCount; i++ ))
 		do
-			kerdesMarVolt=0
-			kerdesNumber=$(( ( RANDOM % $mennyiKerdes )  + 1 ))
-			while [ "$kerdesMarVolt" -eq 0 ]
+			questionAlreadyAsked=0
+			questionNumber=$(( ( RANDOM % $questionCount )  + 1 ))
+			while [ "$questionAlreadyAsked" -eq 0 ]
 			do
-				kerdesMarVolt=1
-				kerdesNumber=$(( ( RANDOM % $mennyiKerdes )  + 1 ))
+				questionAlreadyAsked=1
+				questionNumber=$(( ( RANDOM % $questionCount )  + 1 ))
 				for (( j=0; j<i-1; j++ ))
 				do
-					if [ "${megvalaszoltKerdesek[j]}" == "$kerdesNumber" ]; then
-						kerdesMarVolt=0
+					if [ "${answeredQuestions[j]}" == "$questionNumber" ]; then
+						questionAlreadyAsked=0
 					fi
 				done
 			done
-			megvalaszoltKerdesek+=($kerdesNumber)
+			answeredQuestions+=($questionNumber)
 			echo "A(z) $i -ik kerdes: "
-			sed -n "$kerdesNumber p" $inputOne
-			answer=$(sed -n "$kerdesNumber p" $inputTwo)
+			sed -n "$questionNumber p" $inputOne
+			answer=$(sed -n "$questionNumber p" $inputTwo)
 			read valasz
 			if [ "$answer" == "$valasz" ]; then
 				echo "Helyes valasz!"
-				joValaszok=$(($joValaszok+1))
+				goodAnswers=$(($goodAnswers+1))
 			else
 				echo "Helytelen valasz!!!"
-				rosszValaszok=$(($rosszValaszok+1))
+				wrongAnswers=$(($wrongAnswers+1))
 			fi
 		done
 		echo "Gratulalok! On vegigment a kerdeseken!"
-		echo "A helyes valaszok szama: $joValaszok"
-		echo "A helytelen valaszok szama: $rosszValaszok"
-		echo "Az eredmeny szazalekban: $(($joValaszok*100/$mennyiKerdes))%"
+		echo "A helyes valaszok szama: $goodAnswers"
+		echo "A helytelen valaszok szama: $wrongAnswers"
+		echo "Az eredmeny szazalekban: $(($goodAnswers*100/$questionCount))%"
 		exit 0
 	else
 		echo "Nincsenek kerdesek hozzaadva, a hozzaadashoz kerem inditsa ujra a programot es valassza a 2-es opciot!"
@@ -70,86 +70,100 @@ then
 	fi
 
 
-elif [ $mit == 2 ]
+elif [ $chosenMenu == 2 ]
 then
-	sorszam=1
+	lineNumber=1
 	while IFS= read -r line; do
-		echo "$sorszam : $line"
-		sorszam=$((sorszam+1))
+		echo "$lineNumber : $line"
+		lineNumber=$((lineNumber+1))
 	done < "$inputOne"
 	echo "Mit szeretne tenni?"
 	echo "1. Kerdes hozzaadasa"
 	echo "2. Kerdes torlese"
-	echo "3. Kilepes"
-	read mitTwo
-	while [ $mitTwo != 1 ] && [ $mitTwo != 2 ] && [ $mitTwo != 3 ]
+	echo "3. Osszes kerdes torlese"
+	echo "4. Kilepes"
+	read chosenMenuTwo
+	while [ $chosenMenuTwo != 1 ] && [ $chosenMenuTwo != 2 ] && [ $chosenMenuTwo != 3 ] && [ $chosenMenuTwo != 4 ]
 	do
 		echo "Rossz megadas! Ujra!"
-		read mitTwo
+		read chosenMenuTwo
 	done
 	
-	if [ $mitTwo == 1 ]
+	if [ $chosenMenuTwo == 1 ]
 	then
 		echo "Hany darab kerdest szeretne hozzaadni?"
-		read hanyat
-		while [ $hanyat -lt 1 ] || ! [ $hanyat -eq $hanyat 2>/dev/null ]
+		read iterator
+		while [ $iterator -lt 1 ] || ! [ $iterator -eq $iterator 2>/dev/null ]
 		do
 			echo "Rossz megadas! Ujra!"
-			read hanyat
+			read iterator
 		done
-		ujKerdesSzam=$mennyiKerdes
-		for (( i=0; i<$hanyat; i++))
+		newQuestionCount=$questionCount
+		for (( i=0; i<$iterator; i++))
 		do
 			echo ""
 			echo "Irja le a kerdes szoveget majd nyomjon Enter-t!"
-			read szoveg
-			echo "$szoveg" >> $inputOne
+			read answer
+			echo "$answer" >> $inputOne
 			echo "Rendben! Most irja le a kerdesre adott helyes valaszt majd nyomjon Enter-t!"
-			read szoveg
-			echo "$szoveg" >> $inputTwo
+			read answer
+			echo "$answer" >> $inputTwo
 			sed -i "1d" $inputThree
-                	ujKerdesSzam=$((ujKerdesSzam+1))
-                	echo "$ujKerdesSzam" >> $inputThree
+                	newQuestionCount=$((newQuestionCount+1))
+                	echo "$newQuestionCount" >> $inputThree
 		done
-	elif [ $mitTwo == 2 ]
+	elif [ $chosenMenuTwo == 2 ]
 	then
 		echo "Hany darab kerdest szeretne kitorolni?"
-		read hanyat
-		while [ $hanyat -gt $mennyiKerdes ] || [ $hanyat -lt 1 ] || ! [ $hanyat -eq $hanyat 2>/dev/null ]
+		read iterator
+		while [ $iterator -gt $questionCount ] || [ $iterator -lt 1 ] || ! [ $iterator -eq $iterator 2>/dev/null ]
 		do
 			echo "Rossz megadas! Ujra!"
-			read hanyat
+			read iterator
 		done
-		ujKerdesSzam=$mennyiKerdes
-		for (( i=0; i<$hanyat; i++))
+		newQuestionCount=$questionCount
+		for (( i=0; i<$iterator; i++))
 		do
 			echo ""
 			if [ $i -gt 0 ]; then
-				sorszam=1
-				while IFS= read -r line; do
-					echo "$sorszam : $line"
-					sorszam=$((sorszam+1))
+				lineNumber=1
+				while IFS= read -r linea; do
+					echo "$lineNumber : $linea"
+					lineNumber=$((lineNumber+1))
 				done < "$inputOne"
 			fi
 			echo "Hanyas szamu kerdest szeretne kitorolni?"
-			read szoveg
+			read answer
+			while [ $answer -lt 1 ] || [ $answer -gt $newQuestionCount ] || ! [ $answer -eq $answer 2>/dev/null ]
+			do
+				echo "Rossz megadas! Ujra!"
+				read answer
+			done
 			sed -i "${szoveg}d" $inputOne
 			sed -i "${szoveg}d" $inputTwo
 			sed -i "1d" $inputThree
-			ujKerdesSzam=$((ujKerdesSzam-1))
-			if [ $ujKerdesSzam -lt 0 ]; then
+			newQuestionCount=$((newQuestionCount-1))
+			if [ $newQuestionCount -lt 0 ]; then
 				sed -i "1d" $inputThree
-				ujKerdesSzam=0
+				newQuestionCount=0
 			fi
-			echo "$ujKerdesSzam" >> $inputThree
+			echo "$newQuestionCount" >> $inputThree
 		done
-	elif [ $mitTwo == 3 ]
+	elif [ $chosenMenuTwo == 3 ]
+	then
+		rm -r "prop/"
+		mkdir prop
+		touch prop/answerCount.txt
+		touch prop/answers.txt
+		touch prop/questions.txt
+		echo "0" >> prop/answerCount.txt
+	elif [ $chosenMenuTwo == 4 ]
 	then
 		exit 0
 	fi
 
 
-elif [ $mit == 3 ]
+elif [ $chosenMenu == 3 ]
 then
 	exit 0
 fi
