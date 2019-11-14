@@ -11,11 +11,11 @@ A konfigurációs fájlban ne adjon meg nagyobb értéket az egyes kérdések be
 A kérdés hozzáadásához a prop/database.txt fájlt kell megnyitni.
 
 `KERD_KOZEPES2Hany ujja van az embernek?%K_V`
-`-5`
-`-4`
-`-8`
-`-9`
-`+10%`
+-`-5`
+-`-4`
+-`-8`
+-`-9`
+-`+10%`
 
 Felépítése egy kérdésnek és a hozzá adott válaszoknak:
 KERD_KONNY (KOZEPES, NEHEZ vegződések egyéb esetben) - a kérdés nehézségi besorolása
