@@ -17,10 +17,10 @@ A kérdés hozzáadásához a prop/database.txt fájlt kell megnyitni.
 `-9`  
 `+10%`  
 
-Felépítése egy kérdésnek és a hozzá adott válaszoknak:
-KERD_KONNY (KOZEPES, NEHEZ vegződések egyéb esetben) - a kérdés nehézségi besorolása
-1, 2 - Egyes azon kérdés, amire szöveges választ várunk, begépelve, 2 pedig a feleletválasztós kérdéseket jelöli
-[ kérdés szövege ]%K_V - A kérdés szövege után meg kell adni egy százalékjelet és a K_V megjelolést.
--- Jelekkel jeloljuk a hibás kérdéseket (csakis 2-es típusú kérdés esetén)
-++ Jelekkel jeloljuk a helyes választ, csak egy helyes válasz lehet!
-A válaszok megadása után szintén kötelező egy *százalékjelet* kiírni!
+Felépítése egy kérdésnek és a hozzá adott válaszoknak:  
+KERD_KONNY (KOZEPES, NEHEZ vegződések egyéb esetben) - a kérdés nehézségi besorolása  
+1, 2 - Egyes azon kérdés, amire szöveges választ várunk, begépelve, 2 pedig a feleletválasztós kérdéseket jelöli  
+[ kérdés szövege ]%K_V - A kérdés szövege után meg kell adni egy százalékjelet és a K_V megjelolést.  
+-- Jelekkel jeloljuk a hibás kérdéseket (csakis 2-es típusú kérdés esetén)  
+++ Jelekkel jeloljuk a helyes választ, csak egy helyes válasz lehet!  
+A válaszok megadása után szintén kötelező egy *százalékjelet* kiírni!  
