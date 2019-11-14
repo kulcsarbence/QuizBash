@@ -13,3 +13,10 @@ KERD_KOZEPES2Hany ujja van az embernek?%K_V
 -8
 -9
 +10%
+KERD_KOZEPES2Ki a Linux Ismeretek targy oktatoja?%K_V
+-Kulcsar Bence
+-Japan Akos
+-Kovacs Janos
++Fulep David%
+KERD_NEHEZ1Milyen evet irunk jelenleg?%K_V
++2019%

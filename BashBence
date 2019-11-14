@@ -9,6 +9,7 @@ hardQuestionCount=`grep -c "&h" $dbFile`
 
 echo "Udvozlom a vizsgaztato programban!"
 echo "Kerem valasszon a kovetkezo lehetosegek kozul!"
+echo "0. Megnezni melyik tipusu kerdesbol mennyi van"
 echo "1. Elkezdeni a vizsgat"
 echo "2. Kilepes"
 read chosenMenu
@@ -19,7 +20,7 @@ function stringStrip {
 	echo ${1:$2:${#1}}
 }
 
-while [ $chosenMenu != 1 ] && [ $chosenMenu != 2 ]
+while [ $chosenMenu != 1 ] && [ $chosenMenu != 2 ] && [ $chosenMenu != 0 ]
 do
 	echo "Rossz input, probalja ujra!"
 	read chosenMenu
@@ -308,6 +309,20 @@ then
 			echo "Az erdemjegye: 1"
 		fi
 	fi
+elif [ $chosenMenu == 0 ]
+then
+	konnyuKerdesLista=`grep -oP "(?<=KERD_KONNYU).*?(?=K_V)" $dbFile`
+	IFS='%'
+	k_cnt=`echo $konnyuKerdesLista | wc -l`
+	kozepesKerdesLista=`grep -oP "(?<=KERD_KOZEPES).*?(?=K_V)" $dbFile`
+	IFS='%'
+	ko_cnt=`echo $kozepesKerdesLista | wc -l`
+	nehezKerdesLista=`grep -oP "(?<=KERD_NEHEZ).*?(?=K_V)" $dbFile`
+	IFS='%'
+	n_cnt=`echo $nehezKerdesLista | wc -l`
+	echo "Konnyu kerdesekbol van $k_cnt db"
+	echo "Kozepes kerdesekbol van $ko_cnt db"
+	echo "Nehez kerdesekbol van $n_cnt db"
 elif [ $chosenMenu == 2 ]
 then
 	exit 0
