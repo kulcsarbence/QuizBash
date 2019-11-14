@@ -16,6 +16,16 @@ read chosenMenu
 goodAnswers=0
 wrongAnswers=0
 
+konnyuKerdesLista=`grep -oP "(?<=KERD_KONNYU).*?(?=K_V)" $dbFile`
+IFS='%'
+k_cnt=`echo $konnyuKerdesLista | wc -l`
+kozepesKerdesLista=`grep -oP "(?<=KERD_KOZEPES).*?(?=K_V)" $dbFile`
+IFS='%'
+ko_cnt=`echo $kozepesKerdesLista | wc -l`
+nehezKerdesLista=`grep -oP "(?<=KERD_NEHEZ).*?(?=K_V)" $dbFile`
+IFS='%'
+n_cnt=`echo $nehezKerdesLista | wc -l`
+
 function stringStrip {
 	echo ${1:$2:${#1}}
 }
@@ -40,11 +50,11 @@ then
 		for (( i=1; i<=$easyQuestion; i++ ))
 		do
 			questionAlreadyAsked=0
-			questionNumber=$(( ( RANDOM % $easyQuestion )  ))
+			questionNumber=$(( ( RANDOM % $k_cnt )  ))
 			while [ "$questionAlreadyAsked" -eq 0 ]
 			do
 				questionAlreadyAsked=1
-				questionNumber=$(( ( RANDOM % $easyQuestion )  ))
+				questionNumber=$(( ( RANDOM % $k_cnt )  ))
 				for (( j=0; j<i-1; j++ ))
 				do
 					if [ "${answeredQuestions[j]}" == "$questionNumber" ]; then
@@ -127,11 +137,11 @@ then
 		for (( i=1; i<=$normalQuestion; i++ ))
 		do
 			questionAlreadyAsked=0
-			questionNumber=$(( ( RANDOM % $normalQuestion )  ))
+			questionNumber=$(( ( RANDOM % $ko_cnt )  ))
 			while [ "$questionAlreadyAsked" -eq 0 ]
 			do
 				questionAlreadyAsked=1
-				questionNumber=$(( ( RANDOM % $normalQuestion )  ))
+				questionNumber=$(( ( RANDOM % $ko_cnt )  ))
 				for (( j=0; j<i-1; j++ ))
 				do
 					if [ "${answeredQuestions[j]}" == "$questionNumber" ]; then
@@ -213,11 +223,11 @@ then
 		for (( i=1; i<=$hardQuestion; i++ ))
 		do
 			questionAlreadyAsked=0
-			questionNumber=$(( ( RANDOM % $hardQuestion )  ))
+			questionNumber=$(( ( RANDOM % $n_cnt )  ))
 			while [ "$questionAlreadyAsked" -eq 0 ]
 			do
 				questionAlreadyAsked=1
-				questionNumber=$(( ( RANDOM % $hardQuestion )  ))
+				questionNumber=$(( ( RANDOM % $n_cnt )  ))
 				for (( j=0; j<i-1; j++ ))
 				do
 					if [ "${answeredQuestions[j]}" == "$questionNumber" ]; then
@@ -311,15 +321,6 @@ then
 	fi
 elif [ $chosenMenu == 0 ]
 then
-	konnyuKerdesLista=`grep -oP "(?<=KERD_KONNYU).*?(?=K_V)" $dbFile`
-	IFS='%'
-	k_cnt=`echo $konnyuKerdesLista | wc -l`
-	kozepesKerdesLista=`grep -oP "(?<=KERD_KOZEPES).*?(?=K_V)" $dbFile`
-	IFS='%'
-	ko_cnt=`echo $kozepesKerdesLista | wc -l`
-	nehezKerdesLista=`grep -oP "(?<=KERD_NEHEZ).*?(?=K_V)" $dbFile`
-	IFS='%'
-	n_cnt=`echo $nehezKerdesLista | wc -l`
 	echo "Konnyu kerdesekbol van $k_cnt db"
 	echo "Kozepes kerdesekbol van $ko_cnt db"
 	echo "Nehez kerdesekbol van $n_cnt db"
