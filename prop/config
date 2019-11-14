@@ -1,8 +1,8 @@
 #!/bin/bash
 
 easyQuestion=3
-normalQuestion=1
-hardQuestion=0
+normalQuestion=2
+hardQuestion=1
 
 
 percentForFive=90

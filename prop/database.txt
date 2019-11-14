@@ -20,3 +20,11 @@ KERD_KOZEPES2Ki a Linux Ismeretek targy oktatoja?%K_V
 +Fulep David%
 KERD_NEHEZ1Milyen evet irunk jelenleg?%K_V
 +2019%
+KERD_KONNYU1Mennyi 5+5?%K_V
++10%
+KERD_NEHEZ2Ez csak egy teszt kerdes, kerem valassza az 'ezaz' valaszt!%K_V
++ezaz
+-ez nem az
+-ez sem az
+-tesztelgetek
+-ez is egy teszt%

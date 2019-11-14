@@ -118,6 +118,7 @@ then
 						goodSelection=$b
 					fi
 				done
+				unset alreadyBeen
 				read valasz
 				if [ "$valasz" == "$goodSelection" ]; then
 					echo "Helyes valasz!"
@@ -133,7 +134,7 @@ then
 		kozepesKerdesLista=`grep -oP "(?<=KERD_KOZEPES).*?(?=K_V)" $dbFile`
 		IFS='%'
 		arr=( $kozepesKerdesLista )
-		declare -a answeredQuestions
+		declare -a answeredQuestions2
 		for (( i=1; i<=$normalQuestion; i++ ))
 		do
 			questionAlreadyAsked=0
@@ -144,12 +145,12 @@ then
 				questionNumber=$(( ( RANDOM % $ko_cnt )  ))
 				for (( j=0; j<i-1; j++ ))
 				do
-					if [ "${answeredQuestions[j]}" == "$questionNumber" ]; then
+					if [ "${answeredQuestions2[j]}" == "$questionNumber" ]; then
 						questionAlreadyAsked=0
 					fi
 				done
 			done
-			answeredQuestions+=($questionNumber)
+			answeredQuestions2+=($questionNumber)
 			echo "A(z) $i -ik kerdes: "
 			questionType="$(echo ${arr[$questionNumber]} | head -c 2 | head -c 1) "
 			if [ "$questionType" == " " ]; then
@@ -180,7 +181,7 @@ then
 				joValasz=`stringStrip $joValasz 1`
 				lineCount=`echo $valaszok | wc -l`
 				goodSelection=0
-				declare -a alreadyBeen2
+				declare -a alreadyBeen_two
 				for (( b=1; b<=$lineCount; b++ ))
 				do
 					alreadyAsked=0
@@ -189,14 +190,14 @@ then
 					do
 						alreadyAsked=1
 						ansNumber=$(( ( RANDOM % $lineCount ) + 1  ))
-						for (( j=0; j<b-1; j++ ))
+						for (( j=0; j<b; j++ ))
 						do
-							if [ "${alreadyBeen2[j]}" == "$ansNumber" ]; then
+							if [ "${alreadyBeen_two[j]}" == "$ansNumber" ]; then
 								alreadyAsked=0
 							fi
 						done
 					done
-					alreadyBeen2+=($ansNumber)
+					alreadyBeen_two+=( $ansNumber )
 					aValasz=`echo $valaszok | sed "$ansNumber"'q;d'`
 					aValasz=`stringStrip $aValasz 1`
 					echo "$b: " $aValasz
@@ -204,6 +205,7 @@ then
 						goodSelection=$b
 					fi
 				done
+				unset alreadyBeen_two
 				read valasz
 				if [ "$valasz" == "$goodSelection" ]; then
 					echo "Helyes valasz!"
@@ -219,7 +221,7 @@ then
 		nehezKerdesLista=`grep -oP "(?<=KERD_NEHEZ).*?(?=K_V)" $dbFile`
 		IFS='%'
 		arr=( $nehezKerdesLista )
-		declare -a answeredQuestions
+		declare -a answeredQuestions3
 		for (( i=1; i<=$hardQuestion; i++ ))
 		do
 			questionAlreadyAsked=0
@@ -230,12 +232,12 @@ then
 				questionNumber=$(( ( RANDOM % $n_cnt )  ))
 				for (( j=0; j<i-1; j++ ))
 				do
-					if [ "${answeredQuestions[j]}" == "$questionNumber" ]; then
+					if [ "${answeredQuestions3[j]}" == "$questionNumber" ]; then
 						questionAlreadyAsked=0
 					fi
 				done
 			done
-			answeredQuestions+=($questionNumber)
+			answeredQuestions3+=($questionNumber)
 			echo "A(z) $i -ik kerdes: "
 			questionType="$(echo ${arr[$questionNumber]} | head -c 2 | head -c 1) "
 			if [ "$questionType" == " " ]; then
@@ -291,6 +293,7 @@ then
 						goodSelection=$b
 					fi
 				done
+				unset alreadyBeen3
 				read valasz
 				if [ "$valasz" == "$goodSelection" ]; then
 					echo "Helyes valasz!"
