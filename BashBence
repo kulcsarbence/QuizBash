@@ -169,8 +169,7 @@ then
 				joValasz=`stringStrip $joValasz 1`
 				lineCount=`echo $valaszok | wc -l`
 				goodSelection=0
-				declare -a alreadyBeen
-				echo $valaszok
+				declare -a alreadyBeen2
 				for (( b=1; b<=$lineCount; b++ ))
 				do
 					alreadyAsked=0
@@ -181,12 +180,12 @@ then
 						ansNumber=$(( ( RANDOM % $lineCount ) + 1  ))
 						for (( j=0; j<b-1; j++ ))
 						do
-							if [ "${alreadyBeen[j]}" == "$ansNumber" ]; then
+							if [ "${alreadyBeen2[j]}" == "$ansNumber" ]; then
 								alreadyAsked=0
 							fi
 						done
 					done
-					alreadyBeen+=($ansNumber)
+					alreadyBeen2+=($ansNumber)
 					aValasz=`echo $valaszok | sed "$ansNumber"'q;d'`
 					aValasz=`stringStrip $aValasz 1`
 					echo "$b: " $aValasz
@@ -256,7 +255,7 @@ then
 				joValasz=`stringStrip $joValasz 1`
 				lineCount=`echo $valaszok | wc -l`
 				goodSelection=0
-				declare -a alreadyBeen
+				declare -a alreadyBeen3
 
 				for (( b=1; b<=$lineCount; b++ ))
 				do
@@ -268,12 +267,12 @@ then
 						ansNumber=$(( ( RANDOM % $lineCount ) + 1  ))
 						for (( j=0; j<b-1; j++ ))
 						do
-							if [ "${alreadyBeen[j]}" == "$ansNumber" ]; then
+							if [ "${alreadyBeen3[j]}" == "$ansNumber" ]; then
 								alreadyAsked=0
 							fi
 						done
 					done
-					alreadyBeen+=($ansNumber)
+					alreadyBeen3+=($ansNumber)
 					aValasz=`echo $valaszok | sed "$ansNumber"'q;d'`
 					aValasz=`stringStrip $aValasz 1`
 					echo "$b: " $aValasz
