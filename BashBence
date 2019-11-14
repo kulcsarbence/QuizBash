@@ -1,44 +1,49 @@
 #!/bin/bash
 
-inputOne="prop/questions.txt"
-inputTwo="prop/answers.txt"
-inputThree="prop/answerCount.txt"
+dbFile="prop/database.txt"
+source $(dirname $0)/prop/config
 
-echo "Udvozollek a Kviz programomban! Mit szeretnel csinalni?"
-echo "1. Elkezdeni a jatekot"
-echo "2. Kerdesek listajat megnezni"
-echo "3. Kilepes"
+easyQuestionCount=`grep -c "&e" $dbFile`
+normalQuestionCount=`grep -c "&n" $dbFile`
+hardQuestionCount=`grep -c "&h" $dbFile`
+
+echo "Udvozlom a vizsgaztato programban!"
+echo "Kerem valasszon a kovetkezo lehetosegek kozul!"
+echo "1. Elkezdeni a vizsgat"
+echo "2. Kilepes"
 read chosenMenu
-
 goodAnswers=0
 wrongAnswers=0
 
-questionCount=$(head -n 1 $inputThree)
-if (( $questionCount<0 )); then
-	sed -i "1d" $inputThree
-	echo "0" >> $inputThree
-fi
+function stringStrip {
+	echo ${1:$2:${#1}}
+}
 
-while [ $chosenMenu != 1 ] && [ $chosenMenu != 2 ] && [ $chosenMenu != 3 ]
+while [ $chosenMenu != 1 ] && [ $chosenMenu != 2 ]
 do
-	echo "Rosszul adtad meg a szamot! Ujra!"
+	echo "Rossz input, probalja ujra!"
 	read chosenMenu
 done
 
 if [ $chosenMenu == 1 ]
 then
-	questionCount=$(head -n 1 $inputThree)
-	if (( $questionCount > 0 )); then
-		echo "$questionCount kerdest kell helyesen megvalaszolnod. Sok sikert!"
+	echo "A vizsgan " $((easyQuestion+normalQuestion+hardQuestion)) " szamu kerdesre kell valaszolni!"
+	echo "Sok sikert!"
+	if [ 0 == 0 ]
+	then
+		echo "Kovetkeznek a konnyu kerdesek!"
+		konnyuKerdesLista=`grep -oP "(?<=KERD_KONNYU).*?(?=K_V)" $dbFile`
+		IFS='%'
+		arr=( $konnyuKerdesLista )
 		declare -a answeredQuestions
-		for (( i=1; i<=$questionCount; i++ ))
+		for (( i=1; i<=$easyQuestion; i++ ))
 		do
 			questionAlreadyAsked=0
-			questionNumber=$(( ( RANDOM % $questionCount )  + 1 ))
+			questionNumber=$(( ( RANDOM % $easyQuestion )  ))
 			while [ "$questionAlreadyAsked" -eq 0 ]
 			do
 				questionAlreadyAsked=1
-				questionNumber=$(( ( RANDOM % $questionCount )  + 1 ))
+				questionNumber=$(( ( RANDOM % $easyQuestion )  ))
 				for (( j=0; j<i-1; j++ ))
 				do
 					if [ "${answeredQuestions[j]}" == "$questionNumber" ]; then
@@ -48,124 +53,263 @@ then
 			done
 			answeredQuestions+=($questionNumber)
 			echo "A(z) $i -ik kerdes: "
-			sed -n "$questionNumber p" $inputOne
-			answer=$(sed -n "$questionNumber p" $inputTwo)
-			read valasz
-			if [ "$answer" == "$valasz" ]; then
-				echo "Helyes valasz!"
-				goodAnswers=$(($goodAnswers+1))
+			questionType="$(echo ${arr[$questionNumber]} | head -c 2 | head -c 1) "
+			if [ "$questionType" == " " ]; then
+				questionType="$(echo ${arr[$questionNumber]} | head -c 2 | tail -c 1) "
+				currentQuestion=`stringStrip ${arr[$questionNumber]} 2`
 			else
-				echo "Helytelen valasz!!!"
-				wrongAnswers=$(($wrongAnswers+1))
+				questionType="$(echo ${arr[$questionNumber]} | head -c 1) "
+				currentQuestion=`stringStrip ${arr[$questionNumber]} 1`
 			fi
+			echo $currentQuestion
+			if [ "$questionType" -eq "1" ]
+			then
+				#valaszLista=`sed -n -e '/^+/p' $dbFile`
+				joValasz=`sed -n "/$currentQuestion/,/%/p" $dbFile | tail -n +2`
+				joValasz=`stringStrip $joValasz 1`
+				read valasz
+				if [ "$valasz" == "$joValasz" ]; then
+					goodAnswers=$((goodAnswers+1))
+					echo "Helyes valasz!"
+				else
+					wrongAnswers=$((wrongAnswers+1))
+					echo "Helytelen valasz!!!"
+				fi
+			elif [ "$questionType" -eq "2" ]
+			then
+				valaszok=`sed -n "/$currentQuestion/,/%/p" $dbFile | tail -n +2`
+				joValasz=`echo $valaszok | sed -n -e '/^+/p'`
+				joValasz=`stringStrip $joValasz 1`
+				lineCount=`echo $valaszok | wc -l`
+				goodSelection=0
+				declare -a alreadyBeen
+
+				for (( b=1; b<=$lineCount; b++ ))
+				do
+					alreadyAsked=0
+					ansNumber=$(( ( RANDOM % $lineCount ) + 1  ))
+					while [ "$alreadyAsked" -eq 0 ]
+					do
+						alreadyAsked=1
+						ansNumber=$(( ( RANDOM % $lineCount ) + 1  ))
+						for (( j=0; j<b-1; j++ ))
+						do
+							if [ "${alreadyBeen[j]}" == "$ansNumber" ]; then
+								alreadyAsked=0
+							fi
+						done
+					done
+					alreadyBeen+=($ansNumber)
+					aValasz=`echo $valaszok | sed "$ansNumber"'q;d'`
+					aValasz=`stringStrip $aValasz 1`
+					echo "$b: " $aValasz
+					if [ "$aValasz" == "$joValasz" ]; then
+						goodSelection=$b
+					fi
+				done
+				read valasz
+				if [ "$valasz" == "$goodSelection" ]; then
+					echo "Helyes valasz!"
+					goodAnswers=$((goodAnswers+1))
+				else
+					echo "Helytelen valasz!!!"
+					wrongAnswers=$((wrongAnswers+1))
+				fi
+			fi
+			
 		done
-		echo "Gratulalok! On vegigment a kerdeseken!"
+		echo "Kovetkeznek a kozepes nehezsegu kerdesek!"
+		kozepesKerdesLista=`grep -oP "(?<=KERD_KOZEPES).*?(?=K_V)" $dbFile`
+		IFS='%'
+		arr=( $kozepesKerdesLista )
+		declare -a answeredQuestions
+		for (( i=1; i<=$normalQuestion; i++ ))
+		do
+			questionAlreadyAsked=0
+			questionNumber=$(( ( RANDOM % $normalQuestion )  ))
+			while [ "$questionAlreadyAsked" -eq 0 ]
+			do
+				questionAlreadyAsked=1
+				questionNumber=$(( ( RANDOM % $normalQuestion )  ))
+				for (( j=0; j<i-1; j++ ))
+				do
+					if [ "${answeredQuestions[j]}" == "$questionNumber" ]; then
+						questionAlreadyAsked=0
+					fi
+				done
+			done
+			answeredQuestions+=($questionNumber)
+			echo "A(z) $i -ik kerdes: "
+			questionType="$(echo ${arr[$questionNumber]} | head -c 2 | head -c 1) "
+			if [ "$questionType" == " " ]; then
+				questionType="$(echo ${arr[$questionNumber]} | head -c 2 | tail -c 1) "
+				currentQuestion=`stringStrip ${arr[$questionNumber]} 2`
+			else
+				questionType="$(echo ${arr[$questionNumber]} | head -c 1) "
+				currentQuestion=`stringStrip ${arr[$questionNumber]} 1`
+			fi
+			echo $currentQuestion
+			if [ "$questionType" -eq "1" ]
+			then
+				#valaszLista=`sed -n -e '/^+/p' $dbFile`
+				joValasz=`sed -n "/$currentQuestion/,/%/p" $dbFile | tail -n +2`
+				joValasz=`stringStrip $joValasz 1`
+				read valasz
+				if [ "$valasz" == "$joValasz" ]; then
+					goodAnswers=$((goodAnswers+1))
+					echo "Helyes valasz!"
+				else
+					wrongAnswers=$((wrongAnswers+1))
+					echo "Helytelen valasz!!!"
+				fi
+			elif [ "$questionType" -eq "2" ]
+			then
+				valaszok=`sed -n "/$currentQuestion/,/%/p" $dbFile | tail -n +2`
+				joValasz=`echo $valaszok | sed -n -e '/^+/p'`
+				joValasz=`stringStrip $joValasz 1`
+				lineCount=`echo $valaszok | wc -l`
+				goodSelection=0
+				declare -a alreadyBeen
+				echo $valaszok
+				for (( b=1; b<=$lineCount; b++ ))
+				do
+					alreadyAsked=0
+					ansNumber=$(( ( RANDOM % $lineCount ) + 1  ))
+					while [ "$alreadyAsked" -eq 0 ]
+					do
+						alreadyAsked=1
+						ansNumber=$(( ( RANDOM % $lineCount ) + 1  ))
+						for (( j=0; j<b-1; j++ ))
+						do
+							if [ "${alreadyBeen[j]}" == "$ansNumber" ]; then
+								alreadyAsked=0
+							fi
+						done
+					done
+					alreadyBeen+=($ansNumber)
+					aValasz=`echo $valaszok | sed "$ansNumber"'q;d'`
+					aValasz=`stringStrip $aValasz 1`
+					echo "$b: " $aValasz
+					if [ "$aValasz" == "$joValasz" ]; then
+						goodSelection=$b
+					fi
+				done
+				read valasz
+				if [ "$valasz" == "$goodSelection" ]; then
+					echo "Helyes valasz!"
+					goodAnswers=$((goodAnswers+1))
+				else
+					echo "Helytelen valasz!!!"
+					wrongAnswers=$((wrongAnswers+1))
+				fi
+			fi
+			
+		done
+		echo "Kovetkeznek a nehez kerdesek!"
+		nehezKerdesLista=`grep -oP "(?<=KERD_NEHEZ).*?(?=K_V)" $dbFile`
+		IFS='%'
+		arr=( $nehezKerdesLista )
+		declare -a answeredQuestions
+		for (( i=1; i<=$hardQuestion; i++ ))
+		do
+			questionAlreadyAsked=0
+			questionNumber=$(( ( RANDOM % $hardQuestion )  ))
+			while [ "$questionAlreadyAsked" -eq 0 ]
+			do
+				questionAlreadyAsked=1
+				questionNumber=$(( ( RANDOM % $hardQuestion )  ))
+				for (( j=0; j<i-1; j++ ))
+				do
+					if [ "${answeredQuestions[j]}" == "$questionNumber" ]; then
+						questionAlreadyAsked=0
+					fi
+				done
+			done
+			answeredQuestions+=($questionNumber)
+			echo "A(z) $i -ik kerdes: "
+			questionType="$(echo ${arr[$questionNumber]} | head -c 2 | head -c 1) "
+			if [ "$questionType" == " " ]; then
+				questionType="$(echo ${arr[$questionNumber]} | head -c 2 | tail -c 1) "
+				currentQuestion=`stringStrip ${arr[$questionNumber]} 2`
+			else
+				questionType="$(echo ${arr[$questionNumber]} | head -c 1) "
+				currentQuestion=`stringStrip ${arr[$questionNumber]} 1`
+			fi
+			echo $currentQuestion
+			if [ "$questionType" -eq "1" ]
+			then
+				#valaszLista=`sed -n -e '/^+/p' $dbFile`
+				joValasz=`sed -n "/$currentQuestion/,/%/p" $dbFile | tail -n +2`
+				joValasz=`stringStrip $joValasz 1`
+				read valasz
+				if [ "$valasz" == "$joValasz" ]; then
+					goodAnswers=$((goodAnswers+1))
+					echo "Helyes valasz!"
+				else
+					wrongAnswers=$((wrongAnswers+1))
+					echo "Helytelen valasz!!!"
+				fi
+			elif [ "$questionType" -eq "2" ]
+			then
+				valaszok=`sed -n "/$currentQuestion/,/%/p" $dbFile | tail -n +2`
+				joValasz=`echo $valaszok | sed -n -e '/^+/p'`
+				joValasz=`stringStrip $joValasz 1`
+				lineCount=`echo $valaszok | wc -l`
+				goodSelection=0
+				declare -a alreadyBeen
+
+				for (( b=1; b<=$lineCount; b++ ))
+				do
+					alreadyAsked=0
+					ansNumber=$(( ( RANDOM % $lineCount ) + 1  ))
+					while [ "$alreadyAsked" -eq 0 ]
+					do
+						alreadyAsked=1
+						ansNumber=$(( ( RANDOM % $lineCount ) + 1  ))
+						for (( j=0; j<b-1; j++ ))
+						do
+							if [ "${alreadyBeen[j]}" == "$ansNumber" ]; then
+								alreadyAsked=0
+							fi
+						done
+					done
+					alreadyBeen+=($ansNumber)
+					aValasz=`echo $valaszok | sed "$ansNumber"'q;d'`
+					aValasz=`stringStrip $aValasz 1`
+					echo "$b: " $aValasz
+					if [ "$aValasz" == "$joValasz" ]; then
+						goodSelection=$b
+					fi
+				done
+				read valasz
+				if [ "$valasz" == "$goodSelection" ]; then
+					echo "Helyes valasz!"
+					goodAnswers=$((goodAnswers+1))
+				else
+					echo "Helytelen valasz!!!"
+					wrongAnswers=$((wrongAnswers+1))
+				fi
+			fi
+			
+		done
+		echo "Vege a kerdeseknek!"
 		echo "A helyes valaszok szama: $goodAnswers"
 		echo "A helytelen valaszok szama: $wrongAnswers"
-		echo "Az eredmeny szazalekban: $(($goodAnswers*100/$questionCount))%"
-		exit 0
-	else
-		echo "Nincsenek kerdesek hozzaadva, a hozzaadashoz kerem inditsa ujra a programot es valassza a 2-es opciot!"
-		exit 0
+		percentage=$(($goodAnswers*100/$(($easyQuestion+$normalQuestion+$hardQuestion))))%
+		echo "Az eredmeny szazalekban: $percentage"
+		if [ $percentage -ge $percentForFive ]; then
+			echo "Az erdemjegye: 5"
+		elif [ $percentage -ge $percentForFour ]; then
+			echo "Az erdemjegye: 4"
+		elif [ $percentage -ge $percentForThree ]; then
+			echo "Az erdemjegye: 3"
+		elif [ $percentage -ge $percentForTwo ]; then
+			echo "Az erdemjegye: 2"
+		else
+			echo "Az erdemjegye: 1"
+		fi
 	fi
-
-
 elif [ $chosenMenu == 2 ]
-then
-	lineNumber=1
-	while IFS= read -r line; do
-		echo "$lineNumber : $line"
-		lineNumber=$((lineNumber+1))
-	done < "$inputOne"
-	echo "Mit szeretne tenni?"
-	echo "1. Kerdes hozzaadasa"
-	echo "2. Kerdes torlese"
-	echo "3. Osszes kerdes torlese"
-	echo "4. Kilepes"
-	read chosenMenuTwo
-	while [ $chosenMenuTwo != 1 ] && [ $chosenMenuTwo != 2 ] && [ $chosenMenuTwo != 3 ] && [ $chosenMenuTwo != 4 ]
-	do
-		echo "Rossz megadas! Ujra!"
-		read chosenMenuTwo
-	done
-	
-	if [ $chosenMenuTwo == 1 ]
-	then
-		echo "Hany darab kerdest szeretne hozzaadni?"
-		read iterator
-		while [ $iterator -lt 1 ] || ! [ $iterator -eq $iterator 2>/dev/null ]
-		do
-			echo "Rossz megadas! Ujra!"
-			read iterator
-		done
-		newQuestionCount=$questionCount
-		for (( i=0; i<$iterator; i++))
-		do
-			echo ""
-			echo "Irja le a kerdes szoveget majd nyomjon Enter-t!"
-			read answer
-			echo "$answer" >> $inputOne
-			echo "Rendben! Most irja le a kerdesre adott helyes valaszt majd nyomjon Enter-t!"
-			read answer
-			echo "$answer" >> $inputTwo
-			sed -i "1d" $inputThree
-                	newQuestionCount=$((newQuestionCount+1))
-                	echo "$newQuestionCount" >> $inputThree
-		done
-	elif [ $chosenMenuTwo == 2 ]
-	then
-		echo "Hany darab kerdest szeretne kitorolni?"
-		read iterator
-		while [ $iterator -gt $questionCount ] || [ $iterator -lt 1 ] || ! [ $iterator -eq $iterator 2>/dev/null ]
-		do
-			echo "Rossz megadas! Ujra!"
-			read iterator
-		done
-		newQuestionCount=$questionCount
-		for (( i=0; i<$iterator; i++))
-		do
-			echo ""
-			if [ $i -gt 0 ]; then
-				lineNumber=1
-				while IFS= read -r linea; do
-					echo "$lineNumber : $linea"
-					lineNumber=$((lineNumber+1))
-				done < "$inputOne"
-			fi
-			echo "Hanyas szamu kerdest szeretne kitorolni?"
-			read answer
-			while [ $answer -lt 1 ] || [ $answer -gt $newQuestionCount ] || ! [ $answer -eq $answer 2>/dev/null ]
-			do
-				echo "Rossz megadas! Ujra!"
-				read answer
-			done
-			sed -i "${szoveg}d" $inputOne
-			sed -i "${szoveg}d" $inputTwo
-			sed -i "1d" $inputThree
-			newQuestionCount=$((newQuestionCount-1))
-			if [ $newQuestionCount -lt 0 ]; then
-				sed -i "1d" $inputThree
-				newQuestionCount=0
-			fi
-			echo "$newQuestionCount" >> $inputThree
-		done
-	elif [ $chosenMenuTwo == 3 ]
-	then
-		rm -r "prop/"
-		mkdir prop
-		touch prop/answerCount.txt
-		touch prop/answers.txt
-		touch prop/questions.txt
-		echo "0" >> prop/answerCount.txt
-	elif [ $chosenMenuTwo == 4 ]
-	then
-		exit 0
-	fi
-
-
-elif [ $chosenMenu == 3 ]
 then
 	exit 0
 fi
-
-

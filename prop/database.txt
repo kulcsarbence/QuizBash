@@ -1,0 +1,15 @@
+KERD_KONNYU1Mi Magyarorszag fovarosa?%K_V
++Budapest%
+KERD_KONNYU2Mi Japan fovarosa?%K_V
+-Washington D.C.
+-Bukarest
+-Budapest
++Tokio%
+KERD_KONNYU1Mi Szlovakia fovarosa?%K_V
++Pozsony%
+KERD_KOZEPES2Hany ujja van az embernek?%K_V
+-5
+-4
+-8
+-9
++10%

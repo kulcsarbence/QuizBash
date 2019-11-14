@@ -1,0 +1,11 @@
+#!/bin/bash
+
+easyQuestion=3
+normalQuestion=1
+hardQuestion=0
+
+
+percentForFive=90
+percentForFour=70
+percentForThree=55
+percentForTwo=40
